@@ -11,8 +11,6 @@ import roomescape.payment.domain.PaymentCancelResult;
 import roomescape.payment.domain.PaymentClient;
 import roomescape.payment.exception.PaymentServerException;
 
-import java.util.concurrent.CompletableFuture;
-
 @Component
 public class TossPaymentsClient implements PaymentClient {
     private final RestClient restClient;
@@ -40,20 +38,15 @@ public class TossPaymentsClient implements PaymentClient {
     }
 
     @Override
-    public CompletableFuture<PaymentCancelResult> cancel(PaymentCancelInfo paymentCancelInfo) {
-        try {
-            String uri = String.format("/%s/cancel", paymentCancelInfo.paymentKey());
-            PaymentCancelResult paymentCancelResult = restClient.post()
-                    .uri(uri)
-                    .body(paymentCancelInfo)
-                    .retrieve()
-                    .onStatus(errorHandler)
-                    .body(PaymentCancelResult.class);
-            validateCanceledPayment(paymentCancelResult);
-            return CompletableFuture.completedFuture(paymentCancelResult);
-        } catch (Exception e) {
-            return CompletableFuture.failedFuture(e);
-        }
+    public void cancel(PaymentCancelInfo paymentCancelInfo) {
+        String uri = String.format("/%s/cancel", paymentCancelInfo.paymentKey());
+        PaymentCancelResult paymentCancelResult = restClient.post()
+                .uri(uri)
+                .body(paymentCancelInfo)
+                .retrieve()
+                .onStatus(errorHandler)
+                .body(PaymentCancelResult.class);
+        validateCanceledPayment(paymentCancelResult);
     }
 
     private void validateCanceledPayment(PaymentCancelResult paymentCancelResult) {
